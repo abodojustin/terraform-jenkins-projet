@@ -20,12 +20,22 @@ pipeline {
         }
         stage('Terraform init') {
             steps {
-                sh 'sudo terraform init'
+                sh 'terraform init'
+            }
+        }
+        stage('Terraform format') {
+            steps {
+                sh 'terraform fmt'
+            }
+        }
+        stage('Terraform validate') {
+            steps {
+                sh 'terraform validate'
             }
         }
         stage('Plan') {
             steps {
-                sh 'sudo terraform plan -var="aws_access_key=${AWS_ACCESS_KEY_ID}" -var="aws_secret_key=${AWS_SECRET_ACCESS_KEY}" -var=billing_code="635596325836" -var=project="mini-project-app" --out m.tfplan'
+                sh 'terraform plan -var="aws_access_key=${AWS_ACCESS_KEY_ID}" -var="aws_secret_key=${AWS_SECRET_ACCESS_KEY}" -var=billing_code="635596325836" -var=project="mini-project-app" --out m.tfplan'
             }
         }
         stage('Apply / Destroy') {
@@ -38,9 +48,9 @@ pipeline {
                             parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
                         }
 
-                        sh 'sudo terraform ${action} -input=false m.tfplan'
+                        sh 'terraform ${action} -input=false m.tfplan'
                     } else if (params.action == 'destroy') {
-                        sh 'sudo terraform ${action} -var="aws_access_key=${AWS_ACCESS_KEY_ID}" -var="aws_secret_key=${AWS_SECRET_ACCESS_KEY}" -var=billing_code="635596325836" -var=project="mini-project-app" --auto-approve'
+                        sh 'terraform ${action} -var="aws_access_key=${AWS_ACCESS_KEY_ID}" -var="aws_secret_key=${AWS_SECRET_ACCESS_KEY}" -var=billing_code="635596325836" -var=project="mini-project-app" --auto-approve'
                     } else {
                         error "Invalid action selected. Please choose either 'apply' or 'destroy'."
                     }
